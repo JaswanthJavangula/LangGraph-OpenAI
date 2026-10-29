@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "langgraph-openai"
 version = "0.1.0"
 description = "A sample LangGraph workflow powered by OpenAI."
-readme = "README.md"
+readme = "src/langgraph_openai/README.md"
 requires-python = ">=3.14"
 dependencies = [
     "langchain-openai>=0.2.0",
