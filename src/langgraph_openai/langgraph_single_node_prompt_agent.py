@@ -4,7 +4,7 @@ import uuid
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langgraph.graph import MessagesState, StateGraph, START, END
-from langgraph_openai.agents.LangGraphStateAgents import LangGraphStateAgents
+from langgraph_openai.agents.LangGraphStateAgent import LangGraphStateAgents
 from langgraph.checkpoint.memory import InMemorySaver
 
 
