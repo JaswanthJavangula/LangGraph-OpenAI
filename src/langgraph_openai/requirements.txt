@@ -3,4 +3,5 @@ langgraph
 -e .
 langchain-openai
 langchain-anthropic
+psycopg2-binary
 pydantic

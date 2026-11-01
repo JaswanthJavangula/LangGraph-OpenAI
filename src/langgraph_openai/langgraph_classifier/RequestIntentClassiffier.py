@@ -28,20 +28,20 @@ def classify_intent(llm: str, state: State):
 def prompt_llm_chat(llm: str,state: State):
     messages =  [{
                 'role':'system',
-                'content':'You are a talkative chat assistant. Always say you are a CHAT bot.'}] + state['messages']
+                'content':'You are a talkative chat assistant. Always say you are a CHAT agent first.'}] + state['messages']
     response = llm.invoke(messages)
     return {'messages':[{'role':'assistant','content':response.content}]}
 
 def prompt_llm_knowledge(llm: str,state: State):
     messages =  [{
                 'role':'system',
-                'content':'You are a knowledge assistant. Always say you are a RAG bot.'}] + state['messages']
+                'content':'You are a knowledge assistant. Always say you are a RAG agent first.'}] + state['messages']
     response = llm.invoke(messages)
     return {'messages':[{'role':'assistant','content':response.content}]}
 
 def prompt_llm_code(llm: str,state: State):
     messages =  [{
                 'role':'system',
-                'content':'You are a code assistant. Always say you are a CODE bot.'}] + state['messages']
+                'content':'You are a coding assistant. Always say you are a CODING agent first.'}] + state['messages']
     response = llm.invoke(messages)
     return {'messages':[{'role':'assistant','content':response.content}]}

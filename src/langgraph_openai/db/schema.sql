@@ -1,0 +1,9 @@
+CREATE SCHEMA IF NOT EXISTS hr;
+
+CREATE TABLE IF NOT EXISTS hr.employee (
+    employee_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    dob DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
