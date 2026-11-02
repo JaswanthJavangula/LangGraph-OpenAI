@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+import chromadb
 
 from langgraph_openai.domain.PydanticResearch import ResearchPydanticDomain
 from langchain_openai import ChatOpenAI
@@ -14,6 +15,15 @@ llm = ChatOpenAI(model_name=os.getenv("OPENAI_MODEL"))
 
 human_question = "What is the capital of India?"
 
+#in-memory client; embeddings are not persisted to disk
+chroma_client = chromadb.EphemeralClient()
+embeddings_collection = chroma_client.get_or_create_collection(name="embeddings_project")
+embeddings_collection.add(ids=[human_question], documents=[human_question])
+
+stored = embeddings_collection.get(ids=[human_question], include=["embeddings"])
+vector = stored["embeddings"][0]
+print(f"Vector dimensions: {len(vector)}")
+print(f"Vector preview (first 10 dims): {vector[:10]}")
 
 prompt = getResearchPydanticPrompt(PydanticOutputParser(pydantic_object=ResearchPydanticDomain), human_question)
 

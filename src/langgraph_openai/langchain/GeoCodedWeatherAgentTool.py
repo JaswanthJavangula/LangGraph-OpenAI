@@ -10,7 +10,7 @@ from langgraph_openai.agents.OpenAIStateLessAgent import OpenAIStateLessAgent
 
 load_dotenv()
 #init_chat_model is the factory function, ChatOpenAI is its implementation
-llm = ChatOpenAI(model_name=os.getenv("OPENAI_MODEL_4.1"))
+llm = ChatOpenAI(model_name=os.getenv("OPENAI_MODEL_4.1"), temperature=float(os.getenv("TEMPERATURE")))
 
 city = 'London'
 
