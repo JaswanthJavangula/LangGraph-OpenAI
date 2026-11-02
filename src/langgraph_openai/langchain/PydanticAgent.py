@@ -2,12 +2,11 @@ import os
 
 from dotenv import load_dotenv
 
-from langgraph_openai.domain.Pydantic_Domains import ResearchPydanticDomain
+from langgraph_openai.domain.PydanticResearch import ResearchPydanticDomain
 from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import PydanticOutputParser
-from langgraph_openai.agents.ToolCallingAgent import ToolCallingAgent
-from langgraph_openai.prompts.OpenAI_Prompt_Templates import getResearchPydanticPrompt
+from langgraph_openai.agents.OpenAIStateLessAgent import OpenAIStateLessAgent
+from langgraph_openai.prompts.OpenAIPromptTemplates import getResearchPydanticPrompt
 
 load_dotenv()
 #init_chat_model is the factory function, ChatOpenAI is its implementation
@@ -18,5 +17,5 @@ human_question = "What is the capital of India?"
 
 prompt = getResearchPydanticPrompt(PydanticOutputParser(pydantic_object=ResearchPydanticDomain), human_question)
 
-response = ToolCallingAgent.build_tool_calling_agent(llm, prompt, [])
+response = OpenAIStateLessAgent.invokeStatelessAgent(llm, prompt, [])
 print(response)

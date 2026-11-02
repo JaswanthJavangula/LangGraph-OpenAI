@@ -1,5 +1,5 @@
 """Sample LangGraph and OpenAI project."""
 
-from .LanggraphPseduocode import build_graph
+from .langgraph.LanggraphPseduocode import build_graph
 
 __all__ = ["build_graph"]

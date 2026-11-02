@@ -3,7 +3,7 @@ import uuid
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langgraph.graph import  StateGraph, START, END
-from langgraph_openai.langgraph_classifier.RequestIntentClassiffier import (
+from langgraph_openai.langgraph.langgraph_classifier.RequestIntentClassiffier import (
     State,
     classify_intent,
     prompt_llm_chat,
