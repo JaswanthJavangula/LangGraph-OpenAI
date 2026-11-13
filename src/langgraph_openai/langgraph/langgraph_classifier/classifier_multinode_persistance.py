@@ -1,3 +1,16 @@
+# Usage notes (run commands from the repository root):
+#    Start both with src/langgraph_openai/langgraph/langgraph_classifier/multinode_classifier_starter.sh --thread-id persistence-test-001.
+# 1. Start Swagger: PYTHONPATH=src .venv/bin/python -m langgraph_openai.langgraph.langgraph_classifier.checkpoint_api
+# 2. In another terminal, start the agent:
+#    PYTHONPATH=src .venv/bin/python -m langgraph_openai.langgraph.langgraph_classifier.langgraph_classifier_multinode_agent --thread-id persistence-test-001
+# 3. Open http://127.0.0.1:8000/docs and use GET /checkpoints/{thread_id}.
+# 4. Set DATABASE_URL, OPENAI_MODEL, and OPENAI_API_KEY in the environment or src/langgraph_openai/.env.
+#    PostgreSQL must be running; its database user needs permission to create checkpoint tables.
+#    Reuse the thread ID across restarts; add --resume to continue an unfinished run.
+#    The Swagger endpoint exposes conversation content without authentication; keep it local.
+#    Press Ctrl+C in each terminal to stop the agent and server.
+
+
 import argparse
 import os
 import sys
@@ -91,14 +104,3 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-# Usage notes (run commands from the repository root):
-#    Start both with src/langgraph_openai/langgraph/langgraph_classifier/multinode_classifier_starter.sh --thread-id persistence-test-001.
-# 1. Start Swagger: PYTHONPATH=src .venv/bin/python -m langgraph_openai.langgraph.langgraph_classifier.checkpoint_api
-# 2. In another terminal, start the agent:
-#    PYTHONPATH=src .venv/bin/python -m langgraph_openai.langgraph.langgraph_classifier.langgraph_classifier_multinode_agent --thread-id persistence-test-001
-# 3. Open http://127.0.0.1:8000/docs and use GET /checkpoints/{thread_id}.
-# 4. Set DATABASE_URL, OPENAI_MODEL, and OPENAI_API_KEY in the environment or src/langgraph_openai/.env.
-#    PostgreSQL must be running; its database user needs permission to create checkpoint tables.
-#    Reuse the thread ID across restarts; add --resume to continue an unfinished run.
-#    The Swagger endpoint exposes conversation content without authentication; keep it local.
-#    Press Ctrl+C in each terminal to stop the agent and server.

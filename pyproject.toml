@@ -10,6 +10,7 @@ readme = "src/langgraph_openai/README.md"
 requires-python = ">=3.14"
 dependencies = [
     "langchain-openai>=0.2.0",
+    "openai>=1.0.0",
     "langgraph>=0.2.0",
     "langgraph-checkpoint-postgres>=2.0.0",
     "psycopg[binary,pool]>=3.0",

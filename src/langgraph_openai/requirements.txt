@@ -3,6 +3,7 @@ langgraph
 langgraph-checkpoint-postgres
 -e .
 langchain-openai
+openai>=1.0.0
 langchain-anthropic
 psycopg2-binary
 psycopg[binary,pool]
