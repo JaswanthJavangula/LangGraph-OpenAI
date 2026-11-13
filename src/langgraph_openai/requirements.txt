@@ -1,7 +1,11 @@
 langchain
 langgraph
+langgraph-checkpoint-postgres
 -e .
 langchain-openai
 langchain-anthropic
 psycopg2-binary
+psycopg[binary,pool]
 pydantic
+fastapi
+uvicorn
