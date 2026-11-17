@@ -22,7 +22,7 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
-from langgraph_openai.langgraph.HIL_Approval_NextNode import build_graph
+from langgraph_openai.langgraph.HIL.HIL_Approval_NextNode import build_graph
 
 app = FastAPI(
     title="LangGraph HITL approval",
