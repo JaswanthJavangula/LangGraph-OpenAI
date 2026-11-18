@@ -19,6 +19,13 @@ dependencies = [
     "uvicorn>=0.30.0",
 ]
 
+[project.optional-dependencies]
+caching = [
+    "chromadb>=1.0",
+    "langchain>=1.0",
+    "langgraph>=1.0",
+]
+
 [project.scripts]
 langgraph-openai = "langgraph_openai.main:main"
 
