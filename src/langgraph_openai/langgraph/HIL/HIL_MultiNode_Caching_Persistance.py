@@ -8,28 +8,14 @@ Notes: checkpoints survive restarts; L1 entries do not. Code requests always pau
 for fresh approval, even when their classification or response is cached.
 See src/README.md for configuration, API routes and cache boundaries.
 """
-# Run Notes
-"""
-Validate the combined LangGraph HIL caching example.
-
-1. Run:
-   PYTHONPATH=src .venv/bin/python -m unittest discover \
-     -s tests -p test_hil_caching.py -v
-
-2. Report passing, failing, and skipped tests.
-3. Do not modify code or install dependencies without asking.
-4. Do not read, print, or transmit .env files or credentials.
-5. Do not use a production database.
-6. Ask before live OpenAI calls or starting the API.
-7. For approved live testing, use a unique conversation ID and verify:
-   - code requests pause;
-   - approval and rejection work;
-   - repeating a code question still requires fresh approval;
-   - human-question cache hits increase within five minutes;
-   - clearing caches does not delete conversation history.
-8. Explain any failures using actual command output.
-"""
 from __future__ import annotations
+
+# Manual test runbook (tests/test_hil_caching.py covers this automatically):
+#   PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -p test_hil_caching.py -v
+# For live testing, use a unique conversation ID and verify: code requests pause;
+# approval and rejection work; repeating a code question still requires fresh
+# approval; human-question cache hits increase within five minutes; clearing
+# caches does not delete conversation history.
 
 import argparse
 from collections import Counter, OrderedDict
@@ -37,6 +23,7 @@ from collections.abc import Callable, Generator
 from contextlib import asynccontextmanager, contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import partial
 import hashlib
 import json
 import logging
@@ -228,6 +215,12 @@ class CachedNodes:
             raise ValueError("configurable.thread_id is required for isolated caching.")
         return self.cache.remember(thread, layer, [self.identity, inputs], compute)
 
+    def _llm_call(self, config: RunnableConfig, inputs: Any, invoke: Callable[[], T]) -> T:
+        """Shared by classify/respond: cache a model call at both the node and LLM layers."""
+        return self.cached(
+            config, "node_output", inputs, lambda: self.cached(config, "llm_response", inputs, invoke),
+        )
+
     def classify(self, state: AgentState, config: RunnableConfig) -> dict[str, Any]:
         question = state["messages"][-1].content
 
@@ -244,10 +237,7 @@ class CachedNodes:
                     raise TypeError("Classifier must return RequestIntentClassifier.")
                 return {"human_prompt": result.human_prompt}
 
-            return self.cached(
-                config, "node_output", ["classifier", prepared],
-                lambda: self.cached(config, "llm_response", ["classifier", prepared], invoke),
-            )
+            return self._llm_call(config, ["classifier", prepared], invoke)
 
         # Question caching reuses only the context-free intent, never a final answer.
         result = self.cached(config, "human_question", question, classify_question)
@@ -290,10 +280,7 @@ class CachedNodes:
                 raise TypeError("This text-only example requires a text model response.")
             return response.content
 
-        answer = self.cached(
-            config, "node_output", inputs,
-            lambda: self.cached(config, "llm_response", inputs, invoke),
-        )
+        answer = self._llm_call(config, inputs, invoke)
         # A fresh message is created even on a hit so add_messages appends rather
         # than replacing an earlier assistant message with a cached message ID.
         return {"messages": [{"role": "assistant", "content": answer}]}
@@ -315,19 +302,8 @@ def build_graph(llm: BaseChatModel, retriever: Retriever, cache: L1Cache, model_
     builder = StateGraph(AgentState)
     builder.add_node("classifier_agent", nodes.classify)
     builder.add_node("retrieval_agent", nodes.retrieve)
-
-    def chat(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
-        return nodes.respond(state, config, "chat")
-
-    def knowledge(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
-        return nodes.respond(state, config, "knowledge")
-
-    def code(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
-        return nodes.respond(state, config, "code")
-
-    builder.add_node("chat_agent", chat)
-    builder.add_node("knowledge_agent", knowledge)
-    builder.add_node("code_agent", code)
+    for intent in AGENT_PROMPTS:
+        builder.add_node(f"{intent}_agent", partial(nodes.respond, intent=intent))
     builder.add_node("request_code_change_approval", request_approval)
     builder.add_node("code_change_rejected", lambda _state: {
         "messages": [{"role": "assistant", "content": "Code change was not approved; skipping."}],
