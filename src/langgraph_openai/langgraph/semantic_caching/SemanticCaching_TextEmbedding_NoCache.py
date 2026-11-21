@@ -25,6 +25,7 @@ for question in questions:
     print(time.perf_counter() - start)
     print(response)
 
+# LOCAL RUN INSTRUCTIONS ::  python3  SemanticCaching_TextEmbedding_NoCache.py   
 # LOCAL RUN INSTRUCTIONS ::  path + uv run  SemanticCaching_TextEmbedding_NoCache.py   
 
 
