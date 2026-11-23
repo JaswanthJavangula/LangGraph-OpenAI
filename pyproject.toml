@@ -20,10 +20,19 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+redis-caching = [
+    "numpy>=1.26",
+    "redis>=5.0",
+]
 caching = [
     "chromadb>=1.0",
     "langchain>=1.0",
     "langgraph>=1.0",
+]
+
+[dependency-groups]
+test = [
+    "fakeredis[lua]>=2.23",
 ]
 
 [project.scripts]

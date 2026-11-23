@@ -38,6 +38,84 @@ python -m langgraph_openai "What is a state graph?"
 
 This sample is provided for demonstration purposes.
 
+## Redis semantic response caching example
+
+Implementation: [SemanticRedisCaching_TextEmbeddingCaching.py](langgraph_openai/langgraph/semantic_caching/SemanticRedisCaching_TextEmbeddingCaching.py).
+The original in-memory embedding example is unchanged.
+
+### One-command launcher
+
+Set `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_EMBEDDING_MODEL_SMALL` in your
+environment or a `.env` beside the example or in a parent directory. For example,
+use `gpt-4o-mini` and `text-embedding-3-small` for the two models.
+Install `uv` and Docker Desktop (or Docker with Colima) first, then run:
+
+```bash
+bash src/langgraph_openai/langgraph/semantic_caching/launch_SemanticRedisCaching_TextEmbeddingCaching.sh
+```
+
+The [launcher](langgraph_openai/langgraph/semantic_caching/launch_SemanticRedisCaching_TextEmbeddingCaching.sh)
+installs dependencies, validates configuration, starts the selected default
+Colima context or Docker Desktop on macOS if needed, creates/reuses the named
+Redis container, waits for readiness, checks the connection, and runs the demo.
+It resolves paths relative to itself, so it can also be invoked from another directory.
+Other Docker contexts/platforms require their Docker runtime to be running already.
+
+Redis stays running afterward so subsequent launches can reuse cached responses.
+Stop it with `docker stop langgraph-semantic-redis`.
+The namespace stays unchanged across launches unless you set `REDIS_CACHE_NAMESPACE`.
+For any `REDIS_URL` other than `redis://localhost:6379/0` or
+`redis://127.0.0.1:6379/0`, the launcher skips Docker and connects to the configured
+server, which must already be running. No credentials are printed by the launcher.
+
+### Manual setup
+
+From the repository root, with Python 3.14+ and Docker running:
+
+```bash
+uv sync --extra redis-caching
+docker run -d --name langgraph-semantic-redis \
+  -p 127.0.0.1:6379:6379 \
+  -v langgraph-semantic-redis-data:/data redis:7-alpine redis-server --appendonly yes
+docker exec langgraph-semantic-redis redis-cli ping
+
+export REDIS_URL='redis://localhost:6379/0'
+export OPENAI_MODEL='gpt-4o-mini'
+export OPENAI_EMBEDDING_MODEL_SMALL='text-embedding-3-small'
+# Set OPENAI_API_KEY in your environment or local .env; never commit it.
+uv run --extra redis-caching python \
+  src/langgraph_openai/langgraph/semantic_caching/SemanticRedisCaching_TextEmbeddingCaching.py
+```
+
+The ping should return `PONG`. On later runs, use
+`docker start langgraph-semantic-redis` instead of creating another container.
+Stop it with `docker stop langgraph-semantic-redis` when finished.
+The loopback-only Redis setup is for local development; use authentication and
+TLS (`rediss://`) for remote deployments.
+
+- Redis replaces both Python cache lists with **up to 10 paired records**:
+  10 embeddings and their 10 responses, per model/prompt/namespace combination.
+- Each pair expires **300 seconds after insertion**. Hits do not extend its
+  lifetime. When full, the oldest pair is evicted; reads/writes remove expired
+  pairs atomically. An idle cache key also expires automatically.
+- Each request still calls the embedding API. The script fetches the small
+  Redis collection and computes the same dot-product similarity locally.
+  Only a best score **strictly greater than 0.9** skips response generation.
+- Cache hits survive Python process restarts. The Docker volume and AOF preserve
+  Redis data across container restarts, subject to expiration.
+- Keys include the chat model, embedding model, instructions and cache version.
+  Set `REDIS_CACHE_NAMESPACE` (default `semantic-demo`) separately for different
+  users/tenants or datasets; do not share private responses across those scopes.
+- Redis/OpenAI failures propagate explicitly; there is no silent L1 fallback.
+  Concurrent misses can still generate duplicate model calls.
+
+Offline tests exercise Redis commands and Lua using fakeredis (no API key needed):
+
+```bash
+uv run --extra redis-caching --group test python -m unittest discover \
+  -s tests -p 'test_redis_semantic_*.py' -v
+```
+
 ## Combined multi-node, persistence, HIL and L1 caching example
 
 Implementation: [HIL_MultiNode_Caching_Persistance.py](langgraph_openai/langgraph/HIL/HIL_MultiNode_Caching_Persistance.py).
