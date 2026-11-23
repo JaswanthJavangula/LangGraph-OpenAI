@@ -102,7 +102,7 @@ def main() -> None:
         )
         questions = [
             "What is the capital of France?",
-            "What is the capital of India?",
+            "What is the capital of New Zealand?",
             "What is the capital of France?",
             "Tell me france country capital?",
         ]
@@ -112,6 +112,7 @@ def main() -> None:
                 question, client, cache, model, embedding_model,
             )
             source = "cache" if hit else "Model"
+            print(f"Cache-Key : {cache.key}")
             print(f"Similarity : {similarity} & Value from {source} : {response}")
             print(time.perf_counter() - start)
 

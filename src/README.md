@@ -104,6 +104,8 @@ TLS (`rediss://`) for remote deployments.
 - Cache hits survive Python process restarts. The Docker volume and AOF preserve
   Redis data across container restarts, subject to expiration.
 - Keys include the chat model, embedding model, instructions and cache version.
+  Each result prints the Redis `Cache-Key`; it identifies the shared sorted set
+  holding the embedding/response pairs, not an individual question.
   Set `REDIS_CACHE_NAMESPACE` (default `semantic-demo`) separately for different
   users/tenants or datasets; do not share private responses across those scopes.
 - Redis/OpenAI failures propagate explicitly; there is no silent L1 fallback.
