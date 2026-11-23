@@ -112,7 +112,7 @@ def main() -> None:
                 question, client, cache, model, embedding_model,
             )
             source = "cache" if hit else "Model"
-            print(f"Cache-Key : {cache.key}")
+            print(f"Redis Cache-Key : {cache.key}")
             print(f"Similarity : {similarity} & Value from {source} : {response}")
             print(time.perf_counter() - start)
 
